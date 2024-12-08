@@ -1,8 +1,10 @@
+const fs = require("fs") 
+const https = require("https")
 const express = require("express")
 const app = express()
 const port = 3000
 const cookieParser = require("cookie-parser")
-const cors = require('cors')
+var cors = require('cors')
 
 app.use(cors({
     origin: 'http://localhost:5173',
@@ -22,7 +24,6 @@ app.get("/login", (req, res) => {
 })
 
 app.get("/logout", (req, res) => {
-    console.log('logout');
     delete sessions[req.cookies.sessionId]
     res.setHeader("Set-Cookie", "sessionId=;max-age=0").redirect("/login")
 })
@@ -39,7 +40,7 @@ app.get("/dashboard", (req, res) => {
 
     res.render("pages/dashboard", { user })
 })
-//Fake db
+//Fake db (MySQL, MongDB)
 const db = {
     users: [
         {
@@ -120,25 +121,30 @@ app.get("/api/auth/me", (req, res) => {
 const sessions = {}
 app.post("/login", (req, res) => {
     const { email, password } = req.body
-    console.log(email, password);
     const user = db.users.find(
         (user) => user.email == email && user.password == password
     )
-
     if (user) {
         const sessionId = Date.now().toString()
         sessions[sessionId] = {
             userId: user.id
         }
-        console.log(sessions);
 
-        res.setHeader("Set-Cookie", `sessionId=${sessionId};max-age=3600; httpOnly`)
+        res.setHeader("Set-Cookie", `sessionId=${sessionId};Max-Age=3600; HttpOnly;`)
             .redirect("/dashboard")
         return
     }
     res.send("Invalid");
 })
+// https
+//     .createServer({
+//         key: fs.readFileSync("testcookie.com+2-key.pem"),
+//         cert: fs.readFileSync("testcookie.com+2.pem")
+//     })
+//     .listen(port, () => {
+//         console.log(`Demo app runnng ${port}`);
+//     })
 
 app.listen(3000, () => {
-    console.log("Demo app runnng 3000");
+    console.log("Demo app running 3000");
 })
